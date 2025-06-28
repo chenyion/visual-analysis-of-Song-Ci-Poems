@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>诗酒趁年华</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8B4513',
+                        secondary: '#C8A2C8',
+                        accent: '#D2B48C',
+                        light: '#F5F5DC',
+                        dark: '#3C2A21',
+                    },
+                    fontFamily: {
+                        serif: ['Noto Serif SC', 'serif'],
+                        handwritten: ['Ma Shan Zheng', 'cursive']
+                    },
+                }
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            }
+
+            .bg-pattern {
+                background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23d2b48c' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+            }
+
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+
+            .poem-card {
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+
+            .poem-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            }
+
+            .fade-in {
+                animation: fadeIn 0.8s ease-in;
+            }
+
+            .bubble {
+                transition: all 0.3s ease;
+                cursor: pointer;
+            }
+
+            .bubble:hover {
+                transform: scale(1.05);
+                filter: brightness(1.1);
+            }
+
+            .tooltip {
+                background: rgba(139, 69, 19, 0.9);
+                color: #f8f4e9;
+                border-radius: 8px;
+                padding: 12px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                max-width: 300px;
+                pointer-events: none;
+                transition: opacity 0.3s;
+            }
+
+            .scale-in {
+                animation: scaleIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            @keyframes scaleIn {
+                from {
+                    transform: scale(0.8);
+                    opacity: 0;
+                }
+                to {
+                    transform: scale(1);
+                    opacity: 1;
+                }
+            }
+            .bubble-container {
+                position: relative;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 40px;
+                padding: 40px 20px;
+            }
+
+            .author-bubble {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                color: white;
+                font-weight: bold;
+                text-align: center;
+                transition: transform 0.3s ease;
+                cursor: default;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            }
+
+            .author-bubble .name {
+                font-size: 1.2rem;
+                margin-bottom: 4px;
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            }
+
+            .author-bubble .count {
+                font-size: 0.9rem;
+                opacity: 0.9;
+            }
+
+            .region-card {
+                transition: all 0.3s ease;
+            }
+
+            .region-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            }
+
+            .map-container {
+                position: relative;
+                height: 500px;
+                width: 100%;
+            }
+
+            /* 新增的时间线图表样式 */
+            .poets-timeline-container {
+                background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+                border-radius: 15px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+                overflow: hidden;
+                margin-top: 2rem;
+            }
+
+            .poets-timeline-header {
+                background: linear-gradient(to right, #2c3e50, #4a6491);
+                color: white;
+                padding: 25px 30px;
+                text-align: center;
+            }
+
+            .poets-timeline-header h2 {
+                font-size: 2rem;
+                margin-bottom: 10px;
+                letter-spacing: 1px;
+                font-weight: bold;
+            }
+
+            .poets-timeline-subtitle {
+                font-size: 1.1rem;
+                opacity: 0.9;
+                max-width: 800px;
+                margin: 0 auto;
+                line-height: 1.6;
+            }
+
+            .poets-timeline-content {
+                display: flex;
+                padding: 20px;
+            }
+
+            .poets-chart-container {
+                flex: 3;
+                height: 500px;
+                padding: 15px;
+            }
+
+            .poets-info-panel {
+                flex: 1;
+                padding: 20px;
+                background: #f8f9fa;
+                border-left: 1px solid #eee;
+            }
+
+            .poets-info-panel h3 {
+                color: #2c3e50;
+                margin-bottom: 20px;
+                padding-bottom: 10px;
+                border-bottom: 2px solid #4a6491;
+                font-size: 1.3rem;
+                font-weight: bold;
+            }
+
+            .poets-stats {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+                margin-bottom: 25px;
+            }
+
+            .poets-stat-card {
+                background: white;
+                border-radius: 10px;
+                padding: 15px;
+                box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+                text-align: center;
+            }
+
+            .poets-stat-card h4 {
+                color: #4a6491;
+                font-size: 1rem;
+                margin-bottom: 8px;
+            }
+
+            .poets-stat-value {
+                font-size: 1.5rem;
+                font-weight: bold;
+                color: #2c3e50;
+            }
+
+            .poets-key-events {
+                background: white;
+                border-radius: 10px;
+                padding: 20px;
+                box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            }
+
+            .poets-event-item {
+                margin-bottom: 15px;
+                padding-bottom: 15px;
+                border-bottom: 1px dashed #eee;
+            }
+
+            .poets-event-item:last-child {
+                margin-bottom: 0;
+                padding-bottom: 0;
+                border: none;
+            }
+
+            .poets-event-year {
+                font-weight: bold;
+                color: #e74c3c;
+                margin-right: 8px;
+                background: #fff0f0;
+                padding: 2px 8px;
+                border-radius: 4px;
+                display: inline-block;
+            }
+
+            .poets-legend {
+                display: flex;
+                justify-content: center;
+                gap: 25px;
+                margin-top: 15px;
+            }
+
+            .poets-legend-item {
+                display: flex;
+                align-items: center;
+                font-size: 0.95rem;
+            }
+
+            .poets-legend-color {
+                width: 18px;
+                height: 18px;
+                border-radius: 3px;
+                margin-right: 8px;
+            }
+
+            .poets-birth-color {
+                background: #3498db;
+            }
+
+            .poets-death-color {
+                background: #e74c3c;
+            }
+
+            .poets-count-color {
+                background: #2c3e50;
+            }
+
+            .poets-footer {
+                text-align: center;
+                padding: 15px;
+                color: #7f8c8d;
+                font-size: 0.9rem;
+                background: #f8f9fa;
+                border-top: 1px solid #eee;
+            }
+
+            @media (max-width: 900px) {
+                .poets-timeline-content {
+                    flex-direction: column;
+                }
+
+                .poets-info-panel {
+                    border-left: none;
+                    border-top: 1px solid #eee;
+                }
+            }
+
+            /* 新增的qipaotu样式 */
+            .sentiment-controls {
+                display: flex;
+                gap: 15px;
+                margin-bottom: 20px;
+                flex-wrap: wrap;
+            }
+
+            .sentiment-control-group {
+                background: white;
+                border-radius: 12px;
+                padding: 15px;
+                flex: 1;
+                min-width: 200px;
+            }
+
+            .sentiment-control-group h3 {
+                margin-bottom: 10px;
+                color: #3C2A21;
+                font-size: 1rem;
+            }
+
+            .sentiment-selector {
+                width: 100%;
+                padding: 10px;
+                border-radius: 8px;
+                border: 1px solid #ddd;
+                background: #f9f9f9;
+                font-size: 0.9rem;
+                color: #333;
+                outline: none;
+                transition: border-color 0.3s;
+            }
+
+            .sentiment-selector:focus {
+                border-color: #8B4513;
+            }
+
+            .sentiment-charts {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+                height: 350px;
+            }
+
+            @media (max-width: 768px) {
+                .sentiment-charts {
+                    grid-template-columns: 1fr;
+                    height: auto;
+                }
+            }
+        }
+    </style>
+</head>
+<body class="font-serif bg-light text-dark min-h-screen">
+    <!-- 导航栏 -->
+    <nav id="navbar" class="fixed w-full z-50 transition-all duration-300 bg-light/90 backdrop-blur-sm shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="#" class="flex items-center space-x-2">
+                <i class="fa fa-book text-primary text-2xl"></i>
+                <span class="text-xl font-bold text-primary">诗酒趁年华</span>
+            </a>
+            <div class="hidden md:flex space-x-8">
+                <a href="#home" class="text-dark hover:text-primary transition-colors">首页</a>
+                <a href="#ci-stats" class="text-dark hover:text-primary transition-colors">词牌统计</a>
+                <a href="#word-cloud" class="text-dark hover:text-primary transition-colors">高频词云</a>
+                <a href="#sentiment" class="text-dark hover:text-primary transition-colors">情感分析</a>
+                <a href="#authors" class="text-dark hover:text-primary transition-colors">作者分布</a>
+                <a href="#random-poem" class="text-dark hover:text-primary transition-colors">随机宋词</a>
+                <a href="#poets-map" class="text-dark hover:text-primary transition-colors">词人去处分布</a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden text-primary text-2xl">
+                <i class="fa fa-bars"></i>
+            </button>
+        </div>
+        <!-- 移动端菜单 -->
+        <div id="mobile-menu" class="hidden md:hidden bg-light/95 backdrop-blur-md shadow-lg">
+            <div class="container mx-auto px-4 py-3 flex flex-col space-y-4">
+                <a href="#home" class="text-dark hover:text-primary transition-colors py-2 border-b border-gray-200">首页</a>
+                <a href="#ci-stats" class="text-dark hover:text-primary transition-colors py-2 border-b border-gray-200">词牌统计</a>
+                <a href="#word-cloud" class="text-dark hover:text-primary transition-colors py-2 border-b border-gray-200">高频词云</a>
+                <a href="#sentiment" class="text-dark hover:text-primary transition-colors py-2 border-b border-gray-200">情感分析</a>
+                <a href="#authors" class="text-dark hover:text-primary transition-colors py-2 border-b border-gray-200">作者分布</a>
+                <a href="#random-poem" class="text-dark hover:text-primary transition-colors py-2 border-b border-gray-200">随机宋词</a>
+                <a href="#poets-map" class="text-dark hover:text-primary transition-colors py-2">词人去处分布</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 首页/英雄区 -->
+    <section id="home" class="pt-28 pb-16 md:pt-40 md:pb-24 bg-pattern relative overflow-hidden">
+        <div class="absolute inset-0 bg-primary/5"></div>
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="max-w-3xl mx-auto text-center">
+                <h1 class="text-[clamp(2.5rem,5vw,4rem)] font-bold text-primary mb-6 leading-tight text-shadow fade-in">
+                    诗酒趁年华
+                </h1>
+                <p class="text-[clamp(1.1rem,2vw,1.3rem)] text-dark/80 mb-8 fade-in" style="animation-delay: 0.2s">
+                    探索宋代诗词的美学世界，感受千年文化的深邃魅力
+                </p>
+                <div class="flex flex-wrap justify-center gap-4 fade-in" style="animation-delay: 0.4s">
+                    <a href="#ci-stats" class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg shadow-lg transition-all transform hover:-translate-y-1">
+                        <i class="fa fa-bar-chart mr-2"></i>探索数据
+                    </a>
+                    <a href="#random-poem" class="bg-light border-2 border-primary text-primary hover:bg-primary/10 px-6 py-3 rounded-lg shadow-lg transition-all transform hover:-translate-y-1">
+                        <i class="fa fa-random mr-2"></i>随机宋词
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 词牌统计部分 -->
+<section id="ci-stats" class="py-16 md:py-24 bg-white">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-12">
+            <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-primary mb-4">宋词词牌统计</h2>
+            <p class="text-dark/70 max-w-2xl mx-auto">探索最受欢迎的宋词词牌，感受不同词牌的独特韵律与情感表达</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-light rounded-xl shadow-lg p-6 poem-card">
+                <h3 class="text-xl font-semibold text-primary mb-4 flex items-center">
+                    <i class="fa fa-line-chart mr-2"></i>词牌分布
+                </h3>
+                <div class="h-[600px]">
+                    <!-- 插入词牌分布图片 -->
+                    <img src="宋词十大词牌柱形图.png" alt="词牌分布" class="w-full h-full object-contain">
+                </div>
+            </div>
+
+            <div class="bg-light rounded-xl shadow-lg p-6 poem-card">
+                <h3 class="text-xl font-semibold text-primary mb-4 flex items-center">
+                    <i class="fa fa-pie-chart mr-2"></i>词牌占比
+                </h3>
+                <div class="h-[600px]">
+                    <!-- 插入词牌占比图片 -->
+                    <img src="宋词词牌占比饼图.png" alt="词牌占比" class="w-full h-full object-contain">
+                </div>
+            </div>
+        </div>
+
+        <!-- 新增的图片展示区域 -->
+        <div class="bg-light rounded-xl shadow-lg p-6 poem-card mt-8">
+            <h3 class="text-xl font-semibold text-primary mb-4 flex items-center">
+                <i class="fa fa-image mr-2"></i>词牌名词云
+            </h3>
+            <div class="h-[600px]">
+                <!-- 插入你要新增的图片 -->
+                <img src="ci_rhythmic_topK.png" alt="词牌名词云" class="w-full h-full object-contain">
+            </div>
+        </div>
+    </div>
+</section>
+
+    <!-- 高频词云部分 -->
+    <section id="word-cloud" class="py-16 md:py-24 bg-light/50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-primary mb-4">宋词高频词云</h2>
+                <p class="text-dark/70 max-w-2xl mx-auto">通过词云探索宋词中积极与消极情感意象的表达</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- 积极情感意象词云 -->
+                <div class="bg-white rounded-xl shadow-lg p-6 poem-card">
+                    <h3 class="text-xl font-semibold text-primary mb-4">积极情感意象词云</h3>
+                    <div class="h-[500px] flex items-center justify-center">
+                        <!-- 插入积极情感词云图 -->
+                        <img src="positive_wordcloud.png" alt="积极情感意象词云" class="w-full h-full object-contain">
+                    </div>
+                </div>
+
+                <!-- 消极情感意象词云 -->
+                <div class="bg-white rounded-xl shadow-lg p-6 poem-card">
+                    <h3 class="text-xl font-semibold text-primary mb-4">消极情感意象词云</h3>
+                    <div class="h-[500px] flex items-center justify-center">
+                        <!-- 插入消极情感词云图 -->
+                        <img src="negative_wordcloud.png" alt="消极情感意象词云" class="w-full h-full object-contain">
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+                <div class="bg-white rounded-xl shadow-lg p-6 poem-card">
+                    <h3 class="text-xl font-semibold text-primary mb-4">东风意象</h3>
+                    <p class="text-dark/80">宋词中"东风"出现的频率极高，常象征思念、无奈与感伤。</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6 poem-card">
+                    <h3 class="text-xl font-semibold text-primary mb-4">花意象</h3>
+                    <p class="text-dark/80">花开花落常被用来表达时光易逝、美好短暂的感慨。</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6 poem-card">
+                    <h3 class="text-xl font-semibold text-primary mb-4">愁情表达</h3>
+                    <p class="text-dark/80">"愁"、"恨"、"泪"等词频繁出现，体现了宋词的抒情特质。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 情感分析部分 -->
+<section id="sentiment" class="py-16 md:py-24 bg-white">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-12">
+            <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-primary mb-4">宋词情感分析</h2>
+            <p class="text-dark/70 max-w-2xl mx-auto">通过大语言模型分析宋词情感倾向，探索宋代文人的情感世界</p>
+        </div>
+
+        <!-- 修改为左右两列布局 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-light rounded-xl shadow-lg p-6 poem-card">
+                <h3 class="text-xl font-semibold text-primary mb-4 flex items-center">
+                    <i class="fa fa-area-chart mr-2"></i>情感分布
+                </h3>
+                <div class="h-[600px]">
+                    <!-- 插入 iframe 标签 -->
+                    <iframe src="全宋词情感分析_优化版.html" width="100%" height="100%" frameborder="0"></iframe>
+                </div>
+            </div>
+
+            <div class="bg-light rounded-xl shadow-lg p-6 poem-card">
+    <h3 class="text-xl font-semibold text-primary mb-4 flex items-center">
+        <i class="fa fa-info-circle mr-2"></i>情感分布说明
+    </h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white/50 rounded-lg p-5 border border-primary/20 shadow-sm">
+            <div class="flex items-center mb-3">
+                <div class="w-10 h-10 rounded-full bg-green-100 text-green-700 flex items-center justify-center mr-3">
+                    <i class="fa fa-smile-o text-lg"></i>
+                </div>
+                <h4 class="font-bold text-lg text-dark">积极情感</h4>
+            </div>
+            <p class="text-dark/80">
+                表达对生活的热爱、美好事物的向往以及乐观豁达的心境。常使用"喜""乐""欢"等词汇，
+                如苏轼"但愿人长久，千里共婵娟"的豁达情怀。
+            </p>
+        </div>
+
+        <div class="bg-white/50 rounded-lg p-5 border border-primary/20 shadow-sm">
+            <div class="flex items-center mb-3">
+                <div class="w-10 h-10 rounded-full bg-red-100 text-red-700 flex items-center justify-center mr-3">
+                    <i class="fa fa-frown-o text-lg"></i>
+                </div>
+                <h4 class="font-bold text-lg text-dark">消极情感</h4>
+            </div>
+            <p class="text-dark/80">
+                反映忧愁、哀伤、孤独等情绪。常与个人遭遇、社会动荡相关，
+                如李清照"寻寻觅觅，冷冷清清"的孤寂，或辛弃疾的家国之思。
+            </p>
+        </div>
+
+        <div class="bg-white/50 rounded-lg p-5 border border-primary/20 shadow-sm">
+            <div class="flex items-center mb-3">
+                <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center mr-3">
+                    <i class="fa fa-meh-o text-lg"></i>
+                </div>
+                <h4 class="font-bold text-lg text-dark">中性情感</h4>
+            </div>
+            <p class="text-dark/80">
+                表达较为客观，不带有明显情感倾向。多为对事物的描述或叙事，
+                如描绘自然景物、记录日常生活的词作，情感表达含蓄内敛。
+            </p>
+        </div>
+    </div>
+
+    <div class="mt-6 bg-primary/5 rounded-lg p-4 border border-primary/10">
+        <div class="flex items-start">
+            <i class="fa fa-lightbulb-o text-primary text-xl mt-1 mr-3"></i>
+            <p class="text-dark/80">
+                <span class="font-semibold">分析方法：</span>
+                基于deepseek大语言模型，对21,000首宋词进行语义分析，通过情感分类器将词作
+                划分为积极、消极和中性三类。
+            </p>
+        </div>
+    </div>
+</div>
+        </div>
+
+        <!-- 修改后的情感与词牌区域 -->
+        <div class="bg-light rounded-xl shadow-lg p-6 poem-card mt-8">
+            <h3 class="text-xl font-semibold text-primary mb-4">情感与词牌分析</h3>
+
+            <!-- 新增的qipaotu图表区域 -->
+            <div class="sentiment-controls">
+                <div class="sentiment-control-group">
+                    <h3>词牌选择</h3>
+                    <select id="rhythmic-select" class="sentiment-selector">
+                        <option value="all">全部词牌</option>
+                        <!-- Options will be populated by JavaScript -->
+                    </select>
+                </div>
+
+                <div class="sentiment-control-group">
+                    <h3>情感类型筛选</h3>
+                    <select id="sentiment-select" class="sentiment-selector">
+                        <option value="all">全部情感</option>
+                        <option value="积极">积极情感</option>
+                        <option value="消极">消极情感</option>
+                        <option value="中性">中性情感</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="sentiment-charts">
+                <div id="sentiment-bar" class="chart-container"></div>
+                <div id="sentiment-pie" class="chart-container"></div>
+            </div>
+
+            <div class="mt-4 text-sm text-dark/70">
+                <p>探索不同词牌的情感表达特点，如《水调歌头》多表达豁达情怀，《雨霖铃》则多抒发离愁别绪。</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+    <!-- 作者分布部分 -->
+    <section id="authors" class="py-16 md:py-24 bg-light/50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-primary mb-4">宋词作者分布</h2>
+                <p class="text-dark/70 max-w-2xl mx-auto">探索宋代主要词人及其创作数量与风格特点</p>
+            </div>
+
+            <!-- 整合后的作者创作数量可视化 -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-12 scale-in">
+                <h3 class="text-xl font-semibold text-primary mb-6 flex items-center">
+                    <i class="fa fa-users mr-3"></i>创作数量Top10作者
+                </h3>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2">
+                        <!-- 自定义气泡图 -->
+                        <div class="bubble-container bg-gray-50 rounded-lg p-6">
+                            <!-- 气泡将在这里动态生成 -->
+                        </div>
+                        <div class="mt-8">
+                            <canvas id="barChart"></canvas>
+                        </div>
+                    </div>
+
+
+                    <div>
+                        <h3 class="text-lg font-bold text-primary mb-4">词人创作榜</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center p-3 bg-accent/20 rounded-lg border border-accent/30">
+                                <div class="w-10 h-10 rounded-full bg-primary text-light flex items-center justify-center font-bold text-lg mr-4">1</div>
+                                <div class="flex-1">
+                                    <h3 class="font-bold text-lg">辛弃疾</h3>
+                                    <p class="text-primary">629首作品</p>
+                                </div>
+                                <div class="bg-primary text-light px-3 py-1 rounded-full text-sm font-bold">榜首</div>
+                            </div>
+
+                            <div class="flex items-center p-3 bg-accent/20 rounded-lg border border-accent/30">
+                                <div class="w-10 h-10 rounded-full bg-primary/90 text-light flex items-center justify-center font-bold text-lg mr-4">2</div>
+                                <div class="flex-1">
+                                    <h3 class="font-bold text-lg">苏轼</h3>
+                                    <p class="text-primary">362首作品</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center p-3 bg-accent/20 rounded-lg border border-accent/30">
+                                <div class="w-10 h-10 rounded-full bg-primary/80 text-light flex items-center justify-center font-bold text-lg mr-4">3</div>
+                                <div class="flex-1">
+                                    <h3 class="font-bold text-lg">吴文英</h3>
+                                    <p class="text-primary">341首作品</p>
+                                </div>
+                            </div>
+
+                            <div class="mt-6">
+                                <h3 class="font-bold text-lg text-primary mb-3">词人创作特点</h3>
+                                <ul class="space-y-2 text-dark/80">
+                                    <li class="flex items-start">
+                                        <span class="text-primary mr-2">•</span>
+                                        <span>辛弃疾作品充满爱国情怀与豪放气势</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="text-primary mr-2">•</span>
+                                        <span>苏轼作品以豁达人生和自然景物见长</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="text-primary mr-2">•</span>
+                                        <span>吴文英词风婉约细腻，善用典故</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="text-primary mr-2">•</span>
+                                        <span>赵长卿作品题材广泛，风格多样</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-light rounded-xl shadow-lg p-6 poem-card mt-8">
+            <h3 class="text-xl font-semibold text-primary mb-4 flex items-center">
+                <i class="fa fa-image mr-2"></i>高产作者词云
+            </h3>
+            <div class="h-[600px]">
+                <!-- 插入你要新增的图片 -->
+                <img src="ci_author_topK.png" alt="高产作者词云" class="w-full h-full object-contain">
+            </div>
+        </div>
+    </div>
+            </div>
+
+            <!-- 新增的时间线图表 -->
+            <div class="poets-timeline-container">
+                <div class="poets-timeline-header">
+                    <h2>宋代词人在世人数动态变化</h2>
+                    <p class="poets-timeline-subtitle">本可视化展示了从北宋初年到南宋灭亡期间，主要词人的生卒情况及其在世人数变化。数据涵盖宋代39位著名词人，包括蔡伸、晁补之、晁端礼、陈师道、陈与义、戴复古、范成大、范仲淹、贺铸、洪适、黄庭坚、姜夔、李清照、林逋、刘辰翁、刘过、刘克庄、柳永、陆游、毛滂、欧阳修、秦观、史浩、苏轼、文天祥、吴潜、吴文英、向子諲、辛弃疾、晏几道、晏殊、杨万里、尤袤、张先、张孝祥、张炎、张元干、朱敦儒，时间跨度超过350年。</p>
+                </div>
+
+                <div class="poets-timeline-content">
+                    <div class="poets-chart-container" id="poets-timeline-chart"></div>
+
+                    <div class="poets-info-panel">
+                        <h3>词坛统计概览</h3>
+
+                        <div class="poets-stats">
+                            <div class="poets-stat-card">
+                                <h4>总词人数</h4>
+                                <div class="poets-stat-value">39</div>
+                            </div>
+                            <div class="poets-stat-card">
+                                <h4>时间跨度</h4>
+                                <div class="poets-stat-value">354年</div>
+                            </div>
+                            <div class="poets-stat-card">
+                                <h4>最高在世人数</h4>
+                                <div class="poets-stat-value">24</div>
+                            </div>
+                            <div class="poets-stat-card">
+                                <h4>平均寿命</h4>
+                                <div class="poets-stat-value">66.3岁</div>
+                            </div>
+                        </div>
+
+                        <div class="poets-key-events">
+                            <h3>重要历史事件</h3>
+                            <div class="poets-event-item">
+                                <span class="poets-event-year">960年</span>北宋建立
+                            </div>
+                            <div class="poets-event-item">
+                                <span class="poets-event-year">1127年</span>靖康之变，北宋灭亡
+                            </div>
+                            <div class="poets-event-item">
+                                <span class="poets-event-year">1141年</span>绍兴和议，宋金对峙
+                            </div>
+                            <div class="poets-event-item">
+                                <span class="poets-event-year">1279年</span>崖山海战，南宋灭亡
+                            </div>
+                        </div>
+
+                        <div class="poets-legend">
+                            <div class="poets-legend-item">
+                                <div class="poets-legend-color poets-birth-color"></div>
+                                <span>出生</span>
+                            </div>
+                            <div class="poets-legend-item">
+                                <div class="poets-legend-color poets-death-color"></div>
+                                <span>逝世</span>
+                            </div>
+                            <div class="poets-legend-item">
+                                <div class="poets-legend-color poets-count-color"></div>
+                                <span>在世人数</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="poets-footer">
+                    <p>数据来源：宋代词人数据库 | 可视化设计：宋代文学研究</p>
+                    <p>注：本图表展示了39位宋代著名词人的生卒情况，时间范围从960年（北宋建立）到1320年（张炎逝世）</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 随机宋词部分 -->
+    <section id="random-poem" class="py-16 md:py-24 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-primary mb-4">随机宋词</h2>
+                <p class="text-dark/70 max-w-2xl mx-auto">点击下方按钮，随机欣赏一首宋代经典词作</p>
+            </div>
+
+            <div class="max-w-2xl mx-auto">
+                <div id="poem-container" class="bg-light rounded-xl shadow-lg p-8 poem-card relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 opacity-10">
+                        <i class="fa fa-book text-primary text-7xl"></i>
+                    </div>
+                    <div id="poem-content" class="relative z-10">
+                        <h3 id="poem-title" class="text-2xl font-bold text-primary mb-2 text-center">点击下方按钮加载宋词</h3>
+                        <p id="poem-author" class="text-center text-dark/70 mb-6">——</p>
+                        <div id="poem-body" class="text-center text-lg leading-relaxed mb-6">
+                            宋词将在这里显示...
+                        </div>
+                        <p id="poem-notes" class="text-dark/60 italic text-sm">
+                            注释将在这里显示...
+                        </p>
+                    </div>
+                </div>
+
+                <div class="text-center mt-8">
+                    <button id="random-poem-btn" class="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-lg shadow-lg transition-all transform hover:-translate-y-1">
+                        <i class="fa fa-random mr-2"></i>随机加载宋词
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 词人去处分布部分 -->
+    <section id="poets-map" class="py-16 md:py-24 bg-light/50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-primary mb-4">宋朝词人去处分布图</h2>
+                <p class="text-dark/70 max-w-2xl mx-auto">展示宋朝词人的活动地点分布</p>
+            </div>
+            <!-- 嵌入生成的地图 -->
+            <iframe src="song_poets_map.html" width="100%" height="800" frameborder="0"></iframe>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-primary text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">诗酒趁年华</h3>
+                    <p class="text-white/80">探索宋代诗词的美学世界，感受千年文化的深邃魅力。</p>
+                    <div class="mt-4 flex space-x-4">
+                        <a href="#" class="text-white hover:text-secondary transition-colors">
+                            <i class="fa fa-github text-xl"></i>
+                        </a>
+                        <a href="#" class="text-white hover:text-secondary transition-colors">
+                            <i class="fa fa-weibo text-xl"></i>
+                        </a>
+                        <a href="#" class="text-white hover:text-secondary transition-colors">
+                            <i class="fa fa-twitter text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">数据来源</h3>
+                    <p class="text-white/80">本项目数据来自 <a href="https://github.com/chinese-poetry/chinese-poetry" class="underline hover:text-secondary">chinese-poetry</a> 仓库，感谢所有贡献者的辛勤工作。</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">关于</h3>
+                    <p class="text-white/80">项目组成员：陈浩恩 陈可悦 宝依哲 崔金涛</p>
+                    <p class="text-white/80 mt-2">© 2025 诗酒趁年华</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 导航栏滚动效果
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('py-2', 'shadow-lg');
+                navbar.classList.remove('py-3');
+            } else {
+                navbar.classList.add('py-3');
+                navbar.classList.remove('py-2', 'shadow-lg');
+            }
+        });
+
+        // 移动端菜单切换
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+
+                // 关闭移动端菜单
+                document.getElementById('mobile-menu').classList.add('hidden');
+            });
+        });
+
+        // 词人数据（已排除无名氏）
+        const poets = [
+            { name: "辛弃疾", count: 629, color: 'rgba(139, 69, 19, 0.8)' },
+            { name: "苏轼", count: 362, color: 'rgba(160, 82, 45, 0.8)' },
+            { name: "吴文英", count: 341, color: 'rgba(181, 101, 29, 0.8)' },
+            { name: "赵长卿", count: 339, color: 'rgba(205, 133, 63, 0.8)' },
+            { name: "张炎", count: 302, color: 'rgba(210, 180, 140, 0.8)' },
+            { name: "贺铸", count: 282, color: 'rgba(188, 143, 143, 0.8)' },
+            { name: "晏几道", count: 260, color: 'rgba(139, 115, 85, 0.8)' },
+            { name: "吴潜", count: 256, color: 'rgba(160, 120, 90, 0.8)' },
+            { name: "朱敦儒", count: 246, color: 'rgba(171, 130, 100, 0.8)' },
+            { name: "欧阳修", count: 242, color: 'rgba(150, 110, 80, 0.8)' }
+        ];
+
+        // 创建自定义气泡图（无坐标轴，无悬停效果）
+        function createCustomBubbles() {
+            const container = document.querySelector('.bubble-container');
+            container.innerHTML = '';
+
+            poets.forEach(poet => {
+                // 根据作品数量计算气泡大小
+                const size = 50 + Math.sqrt(poet.count) * 1.5;
+
+                const bubble = document.createElement('div');
+                bubble.className = 'author-bubble';
+                bubble.style.width = `${size}px`;
+                bubble.style.height = `${size}px`;
+                bubble.style.backgroundColor = poet.color;
+                bubble.style.fontSize = `${Math.max(14, size/10)}px`;
+
+                bubble.innerHTML = `
+                    <div class="name">${poet.name}</div>
+                    <div class="count">${poet.count}首</div>
+                `;
+
+                container.appendChild(bubble);
+            });
+        }
+
+        // 柱状图配置
+        const barCtx = document.getElementById('barChart').getContext('2d');
+        const barChart = new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: poets.map(p => p.name),
+                datasets: [{
+                    label: '作品数量',
+                    data: poets.map(p => p.count),
+                    backgroundColor: poets.map(p => p.color),
+                    borderColor: 'rgba(60, 42, 33, 0.8)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `作品数量: ${context.raw}首`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: '作品数量',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    }
+                }
+            }
+        });
+
+        // 宋词数据
+        const songCiData = [
+            {
+                title: "水调歌头·明月几时有",
+                author: "苏轼",
+                rhythmic: "水调歌头",
+                paragraphs: [
+                    "明月几时有？把酒问青天。",
+                    "不知天上宫阙，今夕是何年。",
+                    "我欲乘风归去，又恐琼楼玉宇，高处不胜寒。",
+                    "起舞弄清影，何似在人间？",
+                    "转朱阁，低绮户，照无眠。",
+                    "不应有恨，何事长向别时圆？",
+                    "人有悲欢离合，月有阴晴圆缺，此事古难全。",
+                    "但愿人长久，千里共婵娟。"
+                ],
+                notes: [
+                    "这首词作于宋神宗熙宁七年的中秋夜，苏轼借明月抒发了对亲人的思念以及对人生的感悟。",
+                    "“但愿人长久，千里共婵娟”成为中秋佳节最经典的祝福语。"
+                ],
+                sentiment: "豁达"
+            },
+            {
+                title: "声声慢·寻寻觅觅",
+                author: "李清照",
+                rhythmic: "声声慢",
+                paragraphs: [
+                    "寻寻觅觅，冷冷清清，凄凄惨惨戚戚。",
+                    "乍暖还寒时候，最难将息。",
+                    "三杯两盏淡酒，怎敌他、晚来风急？",
+                    "雁过也，正伤心，却是旧时相识。",
+                    "满地黄花堆积。憔悴损，如今有谁堪摘？",
+                    "守着窗儿，独自怎生得黑？",
+                    "梧桐更兼细雨，到黄昏、点点滴滴。",
+                    "这次第，怎一个愁字了得！"
+                ],
+                notes: [
+                    "这首词是李清照晚年的代表作之一，通过描写秋日黄昏的景象，抒发了国破家亡后的孤寂落寞之情。",
+                    "开头连用十四个叠字，被誉为“千古创格”、“绝世奇文”。"
+                ],
+                sentiment: "哀愁"
+            },
+            {
+                title: "青玉案·元夕",
+                author: "辛弃疾",
+                rhythmic: "青玉案",
+                paragraphs: [
+                    "东风夜放花千树。更吹落、星如雨。",
+                    "宝马雕车香满路。凤箫声动，玉壶光转，一夜鱼龙舞。",
+                    "蛾儿雪柳黄金缕。笑语盈盈暗香去。",
+                    "众里寻他千百度。蓦然回首，那人却在，灯火阑珊处。"
+                ],
+                notes: [
+                    "这首词作于南宋淳熙元年或二年，通过描写元宵佳节的热闹景象，表达了作者不与世俗同流合污的追求。",
+                    "“众里寻他千百度，蓦然回首，那人却在，灯火阑珊处”被王国维列为“古今之成大事业、大学问者”必经的第三境界。"
+                ],
+                sentiment: "孤寂"
+            },
+            {
+                title: "相见欢·无言独上西楼",
+                author: "李煜",
+                rhythmic: "相见欢",
+                paragraphs: [
+                    "无言独上西楼，月如钩。",
+                    "寂寞梧桐深院锁清秋。",
+                    "剪不断，理还乱，是离愁。",
+                    "别是一般滋味在心头。"
+                ],
+                notes: [
+                    "这首词是李煜被囚于汴京时所作，通过描写秋月夜的寂寞景象，抒发了亡国之君的无限哀愁。",
+                    "“剪不断，理还乱，是离愁”以丝缕比喻愁思，将抽象的情感具体化。"
+                ],
+                sentiment: "哀愁"
+            },
+            {
+                title: "雨霖铃·寒蝉凄切",
+                author: "柳永",
+                rhythmic: "雨霖铃",
+                paragraphs: [
+                    "寒蝉凄切，对长亭晚，骤雨初歇。",
+                    "都门帐饮无绪，留恋处，兰舟催发。",
+                    "执手相看泪眼，竟无语凝噎。",
+                    "念去去，千里烟波，暮霭沉沉楚天阔。",
+                    "多情自古伤离别，更那堪，冷落清秋节！",
+                    "今宵酒醒何处？杨柳岸，晓风残月。",
+                    "此去经年，应是良辰好景虚设。",
+                    "便纵有千种风情，更与何人说？"
+                ],
+                notes: [
+                    "这首词是柳永的代表作之一，描写了他与恋人离别时的情景，抒发了离别的痛苦和对未来的迷茫。",
+                    "“今宵酒醒何处？杨柳岸，晓风残月”是千古名句，以景衬情，虚实相生。"
+                ],
+                sentiment: "离愁"
+            },
+            {
+                title: "清平乐·留人不住",
+                author: "晏几道",
+                rhythmic: "清平乐",
+                paragraphs: [
+                    "留人不住，醉解兰舟去。",
+                    "一棹碧涛春水路，过尽晓莺啼处。",
+                    "渡头杨柳青青，枝枝叶叶离情。",
+                    "此后锦书休寄，画楼云雨无凭。"
+                ],
+                notes: [
+                    "这首词写送别之情，上片写送别场景，下片写别后情怀。",
+                    "“渡头杨柳青青，枝枝叶叶离情”以杨柳的枝枝叶叶象征离情的千丝万缕。"
+                ],
+                sentiment: "离愁"
+            },
+            {
+                title: "鹊桥仙·纤云弄巧",
+                author: "秦观",
+                rhythmic: "鹊桥仙",
+                paragraphs: [
+                    "纤云弄巧，飞星传恨，银汉迢迢暗度。",
+                    "金风玉露一相逢，便胜却人间无数。",
+                    "柔情似水，佳期如梦，忍顾鹊桥归路。",
+                    "两情若是久长时，又岂在朝朝暮暮。"
+                ],
+                notes: [
+                    "这首词以七夕牛郎织女相会为题材，歌颂了坚贞不渝的爱情。",
+                    "“两情若是久长时，又岂在朝朝暮暮”成为表达爱情的千古名句。"
+                ],
+                sentiment: "爱情"
+            },
+            {
+                title: "望江南·多少恨",
+                author: "温庭筠",
+                rhythmic: "望江南",
+                paragraphs: [
+                    "多少恨，昨夜梦魂中。",
+                    "还似旧时游上苑，车如流水马如龙。",
+                    "花月正春风。"
+                ],
+                notes: [
+                    "这首词通过梦境回忆昔日繁华，表达了对逝去时光的怀念和无奈。",
+                    "“车如流水马如龙”描绘了昔日宫廷游宴的热闹景象。"
+                ],
+                sentiment: "惆怅"
+            },
+            {
+                title: "苏幕遮·怀旧",
+                author: "范仲淹",
+                rhythmic: "苏幕遮",
+                paragraphs: [
+                    "碧云天，黄叶地，秋色连波，波上寒烟翠。",
+                    "山映斜阳天接水，芳草无情，更在斜阳外。",
+                    "黯乡魂，追旅思，夜夜除非，好梦留人睡。",
+                    "明月楼高休独倚，酒入愁肠，化作相思泪。"
+                ],
+                notes: [
+                    "这首词以秋景为背景，抒发了作者的思乡之情和羁旅之愁。",
+                    "“碧云天，黄叶地”被王实甫《西厢记》化用为“碧云天，黄花地”。"
+                ],
+                sentiment: "思乡"
+            },
+            {
+                title: "如梦令·昨夜雨疏风骤",
+                author: "李清照",
+                rhythmic: "如梦令",
+                paragraphs: [
+                    "昨夜雨疏风骤，浓睡不消残酒。",
+                    "试问卷帘人，却道海棠依旧。",
+                    "知否，知否？应是绿肥红瘦。"
+                ],
+                notes: [
+                    "这首小令以春雨后的海棠花为题材，表达了作者对美好春光的珍惜和对时光流逝的感慨。",
+                    "“知否，知否？应是绿肥红瘦”以花喻人，新颖别致。"
+                ],
+                sentiment: "惜春"
+            }
+        ];
+
+        // 随机宋词按钮点击事件
+        const randomPoemBtn = document.getElementById('random-poem-btn');
+        const poemTitle = document.getElementById('poem-title');
+        const poemAuthor = document.getElementById('poem-author');
+        const poemBody = document.getElementById('poem-body');
+        const poemNotes = document.getElementById('poem-notes');
+
+        randomPoemBtn.addEventListener('click', function() {
+            const randomIndex = Math.floor(Math.random() * songCiData.length);
+            const poem = songCiData[randomIndex];
+
+            poemTitle.textContent = poem.title;
+            poemAuthor.textContent = `—— ${poem.author}`;
+            poemBody.innerHTML = poem.paragraphs.map(p => `<p>${p}</p>`).join('');
+            poemNotes.textContent = poem.notes.join(' ');
+        });
+
+        // 创建自定义气泡图
+        createCustomBubbles();
+
+        // 新增的时间线图表脚本
+        const timelinePoets = [
+            { name: "蔡伸", birth: 1088, death: 1156 },
+            { name: "晁补之", birth: 1053, death: 1110 },
+            { name: "晁端礼", birth: 1046, death: 1113 },
+            { name: "陈师道", birth: 1053, death: 1102 },
+            { name: "陈与义", birth: 1090, death: 1138 },
+            { name: "戴复古", birth: 1167, death: 1248 },
+            { name: "范成大", birth: 1126, death: 1193 },
+            { name: "范仲淹", birth: 989, death: 1052 },
+            { name: "贺铸", birth: 1052, death: 1125 },
+            { name: "洪适", birth: 1117, death: 1184 },
+            { name: "黄庭坚", birth: 1045, death: 1105 },
+            { name: "姜夔", birth: 1154, death: 1221 },
+            { name: "李清照", birth: 1084, death: 1155 },
+            { name: "林逋", birth: 967, death: 1028 },
+            { name: "刘辰翁", birth: 1232, death: 1297 },
+            { name: "刘过", birth: 1154, death: 1206 },
+            { name: "刘克庄", birth: 1187, death: 1269 },
+            { name: "柳永", birth: 984, death: 1053 },
+            { name: "陆游", birth: 1125, death: 1210 },
+            { name: "毛滂", birth: 1056, death: 1124 },
+            { name: "欧阳修", birth: 1007, death: 1072 },
+            { name: "秦观", birth: 1049, death: 1100 },
+            { name: "史浩", birth: 1106, death: 1194 },
+            { name: "苏轼", birth: 1037, death: 1101 },
+            { name: "文天祥", birth: 1236, death: 1283 },
+            { name: "吴潜", birth: 1195, death: 1262 },
+            { name: "吴文英", birth: 1212, death: 1272 },
+            { name: "向子諲", birth: 1085, death: 1152 },
+            { name: "辛弃疾", birth: 1140, death: 1207 },
+            { name: "晏几道", birth: 1038, death: 1110 },
+            { name: "晏殊", birth: 991, death: 1055 },
+            { name: "杨万里", birth: 1127, death: 1206 },
+            { name: "尤袤", birth: 1127, death: 1194 },
+            { name: "张先", birth: 990, death: 1078 },
+            { name: "张孝祥", birth: 1132, death: 1170 },
+            { name: "张炎", birth: 1248, death: 1320 },
+            { name: "张元干", birth: 1091, death: 1161 },
+            { name: "周邦彦", birth: 1056, death: 1121 },
+            { name: "朱敦儒", birth: 1081, death: 1159 }
+        ];
+
+        // 计算在世人数变化
+        function calculateLivingPoets() {
+            const startYear = 950;
+            const endYear = 1350;
+            const livingCounts = [];
+            const birthEvents = [];
+            const deathEvents = [];
+
+            // 初始化每一年的人数
+            for (let year = startYear; year <= endYear; year++) {
+                livingCounts.push({ year, count: 0 });
+            }
+
+            // 处理每个词人的生卒年
+            timelinePoets.forEach(poet => {
+                // 出生事件
+                birthEvents.push({
+                    year: poet.birth,
+                    name: poet.name,
+                    type: 'birth'
+                });
+
+                // 死亡事件
+                deathEvents.push({
+                    year: poet.death,
+                    name: poet.name,
+                    type: 'death'
+                });
+
+                // 计算在世人数
+                for (let year = poet.birth; year <= poet.death; year++) {
+                    const index = year - startYear;
+                    if (index >= 0 && index < livingCounts.length) {
+                        livingCounts[index].count++;
+                    }
+                }
+            });
+
+            return {
+                livingCounts,
+                events: [...birthEvents, ...deathEvents].sort((a, b) => a.year - b.year)
+            };
+        }
+
+        // 准备图表数据
+        const timelineData = calculateLivingPoets();
+        const livingData = timelineData.livingCounts.map(item => [item.year, item.count]);
+        const birthData = timelineData.events.filter(e => e.type === 'birth').map(e => [e.year, 0]);
+        const deathData = timelineData.events.filter(e => e.type === 'death').map(e => [e.year, 0]);
+
+        // 获取最高在世人数
+        const maxLivingCount = Math.max(...timelineData.livingCounts.map(item => item.count));
+
+        // 重要历史事件
+        const historicalEvents = [
+            { year: 960, name: "北宋建立" },
+            { year: 1000, name: "北宋盛世" },
+            { year: 1044, name: "庆历新政" },
+            { year: 1069, name: "王安石变法" },
+            { year: 1127, name: "靖康之变" },
+            { year: 1141, name: "绍兴和议" },
+            { year: 1206, name: "开禧北伐" },
+            { year: 1279, name: "南宋灭亡" }
+        ];
+
+        // 初始化时间线图表
+        const timelineChartDom = document.getElementById('poets-timeline-chart');
+        const timelineChart = echarts.init(timelineChartDom);
+
+        const timelineOption = {
+            tooltip: {
+                trigger: 'axis',
+                formatter: function(params) {
+                    let result = '';
+                    params.forEach(param => {
+                        if (param.seriesName === '在世词人') {
+                            result = `年份：${param.value[0]}<br/>在世词人：${param.value[1]}位`;
+                        }
+                    });
+                    return result;
+                }
+            },
+            legend: {
+                data: ['在世词人', '出生', '逝世'],
+                bottom: 10
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '15%',
+                top: '10%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'value',
+                name: '年份',
+                min: 950,
+                max: 1350,
+                axisLabel: {
+                    formatter: function(value) {
+                        return value + '年';
+                    }
+                },
+                splitLine: {
+                    show: true
+                }
+            },
+            yAxis: {
+                type: 'value',
+                name: '在世词人数',
+                min: 0,
+                max: maxLivingCount + 5,
+                interval: 5,
+                axisLabel: {
+                    formatter: '{value} 人'
+                }
+            },
+            dataZoom: [
+                {
+                    type: 'inside',
+                    start: 0,
+                    end: 100
+                },
+                {
+                    type: 'slider',
+                    start: 0,
+                    end: 100,
+                    height: 20,
+                    bottom: 40
+                }
+            ],
+            series: [
+                {
+                    name: '在世词人',
+                    type: 'line',
+                    data: livingData,
+                    smooth: true,
+                    symbol: 'none',
+                    lineStyle: {
+                        width: 4,
+                        color: '#2c3e50'
+                    },
+                    areaStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: 'rgba(44, 62, 80, 0.5)' },
+                            { offset: 1, color: 'rgba(44, 62, 80, 0.1)' }
+                        ])
+                    },
+                    markPoint: {
+                        data: [
+                            { type: 'max', name: '最高峰' }
+                        ],
+                        symbolSize: 50,
+                        label: {
+                            formatter: '最高峰: {c}人',
+                            position: 'top'
+                        }
+                    }
+                },
+                {
+                    name: '出生',
+                    type: 'scatter',
+                    data: birthData,
+                    symbol: 'circle',
+                    symbolSize: 8,
+                    itemStyle: {
+                        color: '#3498db'
+                    },
+                    tooltip: {
+                        formatter: function(param) {
+                            const year = param.value[0];
+                            const births = timelineData.events
+                                .filter(e => e.type === 'birth' && e.year === year)
+                                .map(e => e.name);
+                            return `${year}年出生：${births.join('、')}`;
+                        }
+                    }
+                },
+                {
+                    name: '逝世',
+                    type: 'scatter',
+                    data: deathData,
+                    symbol: 'circle',
+                    symbolSize: 8,
+                    itemStyle: {
+                        color: '#e74c3c'
+                    },
+                    tooltip: {
+                        formatter: function(param) {
+                            const year = param.value[0];
+                            const deaths = timelineData.events
+                                .filter(e => e.type === 'death' && e.year === year)
+                                .map(e => e.name);
+                            return `${year}年逝世：${deaths.join('、')}`;
+                        }
+                    }
+                },
+                {
+                    type: 'line',
+                    markLine: {
+                        silent: true,
+                        symbol: 'none',
+                        lineStyle: {
+                            color: '#7f8c8d',
+                            type: 'dashed',
+                            width: 1
+                        },
+                        data: historicalEvents.map(event => ({
+                            xAxis: event.year,
+                            label: {
+                                formatter: event.name,
+                                position: 'insideStartTop'
+                            }
+                        }))
+                    }
+                }
+            ]
+        };
+
+        timelineChart.setOption(timelineOption);
+
+        // 响应式调整
+        window.addEventListener('resize', function() {
+            timelineChart.resize();
+        });
+
+        // 新增的qipaotu图表脚本
+        // 模拟数据（实际应用中应使用真实CSV数据）
+        const songciData = [
+            { rhythmic: "导引", sentiment_class: "积极", count: 12 },
+            { rhythmic: "六州", sentiment_class: "积极", count: 8 },
+            { rhythmic: "十二时", sentiment_class: "积极", count: 10 },
+            { rhythmic: "点绛唇", sentiment_class: "消极", count: 15 },
+            { rhythmic: "踏莎行", sentiment_class: "消极", count: 18 },
+            { rhythmic: "雨霖铃", sentiment_class: "消极", count: 7 },
+            { rhythmic: "玉楼春", sentiment_class: "中性", count: 14 },
+            { rhythmic: "巫山一段云", sentiment_class: "中性", count: 9 },
+            { rhythmic: "临江仙", sentiment_class: "中性", count: 11 },
+            { rhythmic: "蝶恋花", sentiment_class: "消极", count: 16 },
+            { rhythmic: "水调歌头", sentiment_class: "中性", count: 13 },
+            { rhythmic: "满江红", sentiment_class: "积极", count: 10 },
+            { rhythmic: "浣溪沙", sentiment_class: "中性", count: 12 },
+            { rhythmic: "菩萨蛮", sentiment_class: "中性", count: 8 },
+            { rhythmic: "清平乐", sentiment_class: "中性", count: 9 },
+            { rhythmic: "鹧鸪天", sentiment_class: "消极", count: 7 },
+            { rhythmic: "念奴娇", sentiment_class: "中性", count: 11 },
+            { rhythmic: "沁园春", sentiment_class: "积极", count: 6 },
+            { rhythmic: "江城子", sentiment_class: "消极", count: 10 },
+            { rhythmic: "苏幕遮", sentiment_class: "消极", count: 8 }
+        ];
+
+        // 获取所有唯一词牌
+        const allRhythmics = [...new Set(songciData.map(item => item.rhythmic))];
+
+        // 填充词牌选择下拉菜单
+        const rhythmicSelect = document.getElementById('rhythmic-select');
+        allRhythmics.forEach(rhythmic => {
+            const option = document.createElement('option');
+            option.value = rhythmic;
+            option.textContent = rhythmic;
+            rhythmicSelect.appendChild(option);
+        });
+
+        // 情感颜色映射
+        const sentimentColors = {
+            "积极": "#2ecc71",
+            "消极": "#e74c3c",
+            "中性": "#3498db"
+        };
+
+        // 初始化图表
+        function initCharts() {
+            updateBarChart('all', 'all');
+            updatePieChart('all');
+        }
+
+        // 更新柱状图
+        function updateBarChart(selectedRhythmic, selectedSentiment) {
+            let filteredData = songciData;
+
+            if (selectedRhythmic !== 'all') {
+                filteredData = filteredData.filter(item => item.rhythmic === selectedRhythmic);
+            }
+
+            if (selectedSentiment !== 'all') {
+                filteredData = filteredData.filter(item => item.sentiment_class === selectedSentiment);
+            }
+
+            // 按词牌分组
+            const groupedData = {};
+            filteredData.forEach(item => {
+                if (!groupedData[item.rhythmic]) {
+                    groupedData[item.rhythmic] = {
+                        "积极": 0,
+                        "消极": 0,
+                        "中性": 0
+                    };
+                }
+                groupedData[item.rhythmic][item.sentiment_class] += item.count;
+            });
+
+            // 准备Plotly数据
+            const rhythmics = Object.keys(groupedData);
+            const positiveData = rhythmics.map(r => groupedData[r]["积极"]);
+            const negativeData = rhythmics.map(r => groupedData[r]["消极"]);
+            const neutralData = rhythmics.map(r => groupedData[r]["中性"]);
+
+            const trace1 = {
+                x: rhythmics,
+                y: positiveData,
+                name: '积极',
+                type: 'bar',
+                marker: { color: sentimentColors["积极"] }
+            };
+
+            const trace2 = {
+                x: rhythmics,
+                y: negativeData,
+                name: '消极',
+                type: 'bar',
+                marker: { color: sentimentColors["消极"] }
+            };
+
+            const trace3 = {
+                x: rhythmics,
+                y: neutralData,
+                name: '中性',
+                type: 'bar',
+                marker: { color: sentimentColors["中性"] }
+            };
+
+            const data = [trace1, trace2, trace3];
+
+            const layout = {
+                title: '词牌情感分布',
+                barmode: 'stack',
+                xaxis: { title: '词牌', tickangle: -45 },
+                yaxis: { title: '作品数量' },
+                height: 300,
+                margin: { l: 60, r: 30, t: 40, b: 100 },
+                showlegend: false
+            };
+
+            Plotly.newPlot('sentiment-bar', data, layout, { responsive: true });
+        }
+
+        // 更新饼图
+        function updatePieChart(selectedRhythmic) {
+            let filteredData = songciData;
+
+            if (selectedRhythmic !== 'all') {
+                filteredData = filteredData.filter(item => item.rhythmic === selectedRhythmic);
+            }
+
+            // 计算情感分布
+            const sentimentCount = {
+                "积极": 0,
+                "消极": 0,
+                "中性": 0
+            };
+
+            filteredData.forEach(item => {
+                sentimentCount[item.sentiment_class] += item.count;
+            });
+
+            const labels = Object.keys(sentimentCount);
+            const values = labels.map(sentiment => sentimentCount[sentiment]);
+            const colors = labels.map(sentiment => sentimentColors[sentiment]);
+
+            const data = [{
+                values: values,
+                labels: labels,
+                type: 'pie',
+                hole: 0.4,
+                marker: { colors: colors },
+                textinfo: 'percent+label',
+                hoverinfo: 'label+percent+value',
+                textposition: 'inside'
+            }];
+
+            const title = selectedRhythmic === 'all' ?
+                '全部词牌情感分布' : `"${selectedRhythmic}"词牌情感分布`;
+
+            const layout = {
+                title: title,
+                height: 300,
+                margin: { t: 40, b: 20, l: 20, r: 20 },
+                showlegend: false
+            };
+
+            Plotly.newPlot('sentiment-pie', data, layout, { responsive: true });
+        }
+
+        // 添加事件监听器
+        rhythmicSelect.addEventListener('change', function() {
+            const selectedRhythmic = this.value;
+            const selectedSentiment = document.getElementById('sentiment-select').value;
+
+            updateBarChart(selectedRhythmic, selectedSentiment);
+            updatePieChart(selectedRhythmic);
+        });
+
+        document.getElementById('sentiment-select').addEventListener('change', function() {
+            const selectedSentiment = this.value;
+            const selectedRhythmic = document.getElementById('rhythmic-select').value;
+
+            updateBarChart(selectedRhythmic, selectedSentiment);
+        });
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', initCharts);
+
+        // 响应式调整
+        window.addEventListener('resize', function() {
+            Plotly.Plots.resize('sentiment-bar');
+            Plotly.Plots.resize('sentiment-pie');
+        });
+    </script>
+</body>
+</html>
